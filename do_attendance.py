@@ -114,29 +114,49 @@ class Attendance(object):
             self.headers['Referer'] = target_url
             render_response = session.post('https://ehall.jlu.edu.cn/infoplus/interface/render', headers=self.headers,
                                            data=data2)
-            user_info = json.loads(render_response.text)['entities'][0]
-            if not user_info:
-                # 如果没有返回数据，说明表单为空，需要提交一次数据
-                user_info['fieldZY'] = config.major
-                user_info['fieldSQnj_Name'] = config.grade
-                user_info['fieldSQxq_Name'] = config.school_district
-                user_info['fieldSQgyl_Name'] = config.department
-                user_info['fieldSQqsh'] = config.room_number
-                user_info['fieldSQssbs'] = '1'
+            entities = json.loads(render_response.text)['entities'][0]
+            user_info = json.loads(render_response.text)['entities'][0]['data']
+            print('user_info is:', user_info)
+            # user_info = {}
+            response_info = {}
+            # if not (user_info['fieldZY'] and  user_info['fieldSQnj_Name'] and user_info['fieldSQxq_Name'] and user_info['fieldSQgyl_Name'] and user_info['fieldSQqsh'] and user_info['fieldSQssbs']):
+            # 如果没有返回数据，说明表单为空，需要提交一次数据
+
+            response_info['fieldZY'] = config.major
+            response_info['fieldSQnj_Name'] = config.grade
+            grade_index = config.grade_optional.index(int(config.grade)) + 1
+            response_info['fieldSQnj'] = str(grade_index)
+            response_info['fieldSQxq_Name'] = config.school_district
+            district_index = config.district_optional.index(config.school_district) + 1
+            response_info['fieldSQxq'] = str(district_index)
+            response_info['fieldSQgyl_Name'] = config.department
+            if config.department != '校外居住':
+                temp = len(config.department_optional[district_index - 1]) - config.department_optional[
+                    district_index - 1].index(config.department) - 1
+                index = 0
+                for i in range(district_index):
+                    index += len(config.department_optional[i])
+                index -= temp
+                response_info['fieldSQgyl'] = str(index)
+            else:
+                response_info['fieldSQgyl'] = str(81 + district_index)
+            response_info['fieldSQqsh'] = config.room_number
+            response_info['fieldSQssbs'] = '1'
 
             if parse('7:00') <= datetime.now() <= parse('8:00'):
                 # 早打卡
-                user_info['fieldZtw'] = '1'
+                response_info['fieldZtw'] = '1'
             elif parse('11:00') <= datetime.now() <= parse('12:00'):
                 # 中午打卡
-                user_info['fieldZhongtw'] = '1'
+                response_info['fieldZhongtw'] = '1'
             elif parse('17:00') <= datetime.now() <= parse('18:00'):
                 # 晚打卡
-                user_info['fieldWantw'] = '1'
+                response_info['fieldWantw'] = '1'
+            print(response_info)
 
             data3 = {
                 'actionId': '1',
-                'formData': json.dumps(user_info['data']),
+                'formData': json.dumps(response_info),
                 'remark': '',
                 'rand': str(random.random() * 999),
                 'nextUsers': '{}',
@@ -144,7 +164,7 @@ class Attendance(object):
                 'timestamp': int(time.time()),
                 'csrfToken': csrf_token,
                 'lang': 'zh',
-                'boundFields': ','.join(user_info['fields'].keys())
+                'boundFields': ','.join(entities['fields'].keys())
             }
             response4 = session.post('https://ehall.jlu.edu.cn/infoplus/interface/doAction', headers=self.headers,
                                      data=data3)
