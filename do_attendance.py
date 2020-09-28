@@ -90,7 +90,7 @@ class Attendance(object):
             'csrfToken': csrf_token,
             'formData': '{"_VAR_URL":"https://ehall.jlu.edu.cn/infoplus/form/YJSMRDK/start","_VAR_URL_Attr":"{}"}',
         }
-        self.headers['Referer'] = 'Referer: https://ehall.jlu.edu.cn/infoplus/form/YJSMRDK/start'
+        self.headers['Referer'] = 'https://ehall.jlu.edu.cn/infoplus/form/YJSMRDK/start'
         # 获取表单url，这里可能因为错过打卡时间而出现错误的json数据
         post_response = session.post('https://ehall.jlu.edu.cn/infoplus/interface/start', headers=self.headers,
                                      data=data1)
