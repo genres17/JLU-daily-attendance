@@ -5,7 +5,7 @@ from datetime import datetime
 sched = BlockingScheduler()
 
 
-@sched.scheduled_job('cron', minute='*/20')
+@sched.scheduled_job('cron', minute='*/1')
 def main():
     a = Attendance()
     try:
