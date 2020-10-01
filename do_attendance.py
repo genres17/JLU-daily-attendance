@@ -152,11 +152,13 @@ class Attendance(object):
             elif parse('17:00') <= datetime.now() <= parse('18:00'):
                 # 晚打卡
                 response_info['fieldWantw'] = '1'
+            print(type(user_info))
+            user_info.update(response_info)
             print(response_info)
 
             data3 = {
                 'actionId': '1',
-                'formData': json.dumps(response_info),
+                'formData': json.dumps(user_info),
                 'remark': '',
                 'rand': str(random.random() * 999),
                 'nextUsers': '{}',
